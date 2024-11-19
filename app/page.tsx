@@ -1,101 +1,116 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [films, setFilms] = useState<any[]>([]);
+  const [optionData, setOptionData] = useState<any[]>([]);
+  const [selectedFilm, setSelectedFilm] = useState<any>();
+  const [loadingData, setLoadingData] = useState<boolean>(false);
+  const [noOptionSelected, setNoOptionSelected] = useState<boolean>(true);
+  const options = ["Characters", "Species", "Starships", "Vehicles", "Planets"];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  function handleFilmClick(film: any) {
+    setNoOptionSelected(true);
+    setLoadingData(false);
+    setSelectedFilm(film);
+  }
+
+  async function handleFetch(option: string) {
+    setLoadingData(false);
+    setNoOptionSelected(false);
+    const promises = selectedFilm[option].map((URL: string) =>
+      fetch(URL).then((res) => res.json())
+    );
+    try {
+      const data = await Promise.all(promises);
+      setOptionData(data);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoadingData(true);
+  }
+
+  useEffect(() => {
+    fetch("https://swapi.dev/api/films/")
+      .then((res) => res.json())
+      .then((data) => {
+        setFilms(data.results);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
+
+  return (
+    <>
+      <header className="header footer-center bg-neutral text-neutral-content p-10 text-4xl mb-10 rounded">
+        Star Wars
+      </header>
+      {/* films */}
+      <div className="flex">
+        <div className="gap-4">
+          <div className="place-self-center ml-5 text-2xl font-bold">Films</div>
+          <div className="divider ml-9"></div>
+          {films.map((film) => (
+            <button
+              key={film.title}
+              className="btn btn-block my-1 m-5 text-lg"
+              onClick={() => handleFilmClick(film)}
+            >
+              {film.title}
+            </button>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        <div className="gap-4">
+          {/* options */}
+          {selectedFilm && (
+            <>
+              <div className="place-self-center ml-20 text-2xl font-bold">
+                {selectedFilm.title}
+              </div>
+              <div className="divider ml-20"></div>
+              {options.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => handleFetch(option.toLowerCase())}
+                  className="btn btn-block my-1 m-10 min-w-72 text-lg"
+                >
+                  {option}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+        <div className="gap-4">
+          {/* data */}
+          {loadingData ? (
+            <div className="overflow-y-auto max-h-[50vh] m-10">
+              <table className="table min-w-80">
+                <tbody>
+                  {optionData.map((option) => (
+                    <tr key={option.name}>
+                      <td>{option.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : noOptionSelected ? (
+            <div className="w-96 h-96"></div>
+          ) : (
+            <div className="w-96 h-96 flex justify-center content-center">
+              <span className="loading loading-dots loading-lg"></span>
+            </div>
+          )}
+        </div>
+      </div>
+      {/* footer */}
+      <footer className="footer bg-neutral text-neutral-content p-10 mt-10">
+        <nav className="mx-auto">
+          <h6 className="footer-title mx-16">By Ezra Bales</h6>
+          <p>Copyright © {new Date().getFullYear()} - Most rights reserved</p>
+        </nav>
       </footer>
-    </div>
+    </>
   );
 }
