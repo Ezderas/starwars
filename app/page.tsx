@@ -1,22 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
+import UserButtonClick from "./components/UserButtonClick";
+import InputHash from "./components/InputHash";
+
+const savedFilm = JSON.parse(localStorage.getItem("Film") ?? "false");
 
 export default function Home() {
   const [films, setFilms] = useState<any[]>([]);
   const [optionData, setOptionData] = useState<any[]>([]);
-  const [selectedFilm, setSelectedFilm] = useState<any>();
+  const [selectedFilm, setSelectedFilm] = useState<any>(savedFilm ?? {});
   const [loadingData, setLoadingData] = useState<boolean>(false);
   const [noOptionSelected, setNoOptionSelected] = useState<boolean>(true);
   const options = ["Characters", "Species", "Starships", "Vehicles", "Planets"];
 
   function handleFilmClick(film: any) {
     setNoOptionSelected(true);
-    setLoadingData(false);
+    setLoadingData(true);
     setSelectedFilm(film);
+    localStorage.setItem("Film", JSON.stringify(film));
   }
 
   async function handleFetch(option: string) {
-    setLoadingData(false);
+    setLoadingData(true);
     setNoOptionSelected(false);
     const promises = selectedFilm[option].map((URL: string) =>
       fetch(URL).then((res) => res.json())
@@ -26,11 +31,13 @@ export default function Home() {
       setOptionData(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingData(false);
     }
-    setLoadingData(true);
   }
 
   useEffect(() => {
+    console.log(savedFilm);
     fetch("https://swapi.dev/api/films/")
       .then((res) => res.json())
       .then((data) => {
@@ -51,14 +58,14 @@ export default function Home() {
         <div className="gap-4">
           <div className="place-self-center ml-5 text-2xl font-bold">Films</div>
           <div className="divider ml-9"></div>
-          {films.map((film) => (
-            <button
+          {films.map((film: any) => (
+            <UserButtonClick
               key={film.title}
-              className="btn btn-block my-1 m-5 text-lg"
-              onClick={() => handleFilmClick(film)}
-            >
-              {film.title}
-            </button>
+              selection={film}
+              handleClick={handleFilmClick}
+              className={"btn btn-block my-1 m-5 text-lg"}
+              content={film.title}
+            />
           ))}
         </div>
         <div className="gap-4">
@@ -70,24 +77,24 @@ export default function Home() {
               </div>
               <div className="divider ml-20"></div>
               {options.map((option) => (
-                <button
+                <UserButtonClick
                   key={option}
-                  onClick={() => handleFetch(option.toLowerCase())}
-                  className="btn btn-block my-1 m-10 min-w-72 text-lg"
-                >
-                  {option}
-                </button>
+                  selection={option.toLowerCase()}
+                  handleClick={handleFetch}
+                  className={"btn btn-block my-1 m-10 min-w-72 text-lg"}
+                  content={option}
+                />
               ))}
             </>
           )}
         </div>
         <div className="gap-4">
           {/* data */}
-          {loadingData ? (
+          {!loadingData ? (
             <div className="overflow-y-auto max-h-[50vh] m-10">
               <table className="table min-w-80">
                 <tbody>
-                  {optionData.map((option) => (
+                  {optionData.map((option: any) => (
                     <tr key={option.name}>
                       <td>{option.name}</td>
                     </tr>
@@ -104,6 +111,9 @@ export default function Home() {
           )}
         </div>
       </div>
+      {/* input */}
+      <InputHash title={"Password"} />
+
       {/* footer */}
       <footer className="footer bg-neutral text-neutral-content p-10 mt-10">
         <nav className="mx-auto">
