@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 type Props = {
@@ -16,7 +18,11 @@ export default function InputHash({ title }: Props) {
     <>
       <div>{title}</div>
       <input onChange={handleUserInput} />
-      <div>{userInput ?? localStorage.getItem("username")} </div>
+      <div>
+        {userInput ?? typeof window !== "undefined"
+          ? localStorage.getItem("username")
+          : ""}{" "}
+      </div>
       <button className="btn" onClick={() => localStorage.clear()}>
         Clear Storage
       </button>

@@ -3,12 +3,10 @@ import { useState, useEffect } from "react";
 import UserButtonClick from "./components/UserButtonClick";
 import InputHash from "./components/InputHash";
 
-const savedFilm = JSON.parse(localStorage.getItem("Film") ?? "false");
-
 export default function Home() {
   const [films, setFilms] = useState<any[]>([]);
   const [optionData, setOptionData] = useState<any[]>([]);
-  const [selectedFilm, setSelectedFilm] = useState<any>(savedFilm ?? {});
+  const [selectedFilm, setSelectedFilm] = useState<any>({});
   const [loadingData, setLoadingData] = useState<boolean>(false);
   const [noOptionSelected, setNoOptionSelected] = useState<boolean>(true);
   const options = ["Characters", "Species", "Starships", "Vehicles", "Planets"];
@@ -37,7 +35,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    console.log(savedFilm);
+    const savedFilm = JSON.parse(localStorage.getItem("Film") ?? "false");
+    setSelectedFilm(savedFilm ?? {});
     fetch("https://swapi.dev/api/films/")
       .then((res) => res.json())
       .then((data) => {
